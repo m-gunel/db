@@ -253,10 +253,50 @@ func (de *DbExplorer) handleGetRecord(w http.ResponseWriter, r *http.Request, ta
 
 
 func (de *DbExplorer) handlePostRecord(w http.ResponseWriter, r *http.Request, tableName, id string) {
-	http.Error(w, "POST operation not implemented for this table", http.StatusNotImplemented)
+	var data map[string]interface{}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&data); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	keys := []string{}
+	placeholders := []string{}
+	values := []interface{}{}
+
+	for key, value := range data {
+		keys = append(keys, key)
+		placeholders = append(placeholders, fmt.Sprintf("$%d", len(values)+1))
+		values = append(values, value)
+	}
+
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", tableName, strings.Join(keys, ", "), strings.Join(placeholders, ", "))
+	_, err := de.db.Exec(query, values...)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error inserting record: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"response": "Record inserted successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
+
 func (de *DbExplorer) handleDeleteRecord(w http.ResponseWriter, r *http.Request, tableName, id string) {
-	http.Error(w, "DELETE operation not implemented for this table", http.StatusNotImplemented)
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = $1", tableName)
+	_, err := de.db.Exec(query, id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error deleting record: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{
+		"response": "Record deleted successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
