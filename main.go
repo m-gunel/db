@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	DSN = "user=postgres password=6773655gunay dbname=db_go sslmode=disable"
+	DSN = "user=postgres password=********** dbname=db_go sslmode=disable"
 )
 
 func main() {
