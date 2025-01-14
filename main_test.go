@@ -84,7 +84,7 @@ func CleanupTestApis(db *sql.DB) {
 }
 
 func TestApis(t *testing.T) {
-	db, err := sql.Open("postgres", "user=postgres password=6773655gunay dbname=db_go sslmode=disable")
+	db, err := sql.Open("postgres", "user=postgres password=********* dbname=db_go sslmode=disable")
 	if err != nil {
 		t.Fatalf("error opening database: %v", err)
 	}
